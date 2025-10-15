@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
 
     environment {
         IMAGE_NAME = "gokulk306/react-docker-demo"
