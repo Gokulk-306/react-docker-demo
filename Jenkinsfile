@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        nodejs "node18"
+    }
 
     environment {
         IMAGE_NAME = "gokulk306/react-docker-demo"  // Change this to your Docker Hub username
