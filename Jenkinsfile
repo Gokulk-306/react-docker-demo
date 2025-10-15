@@ -1,15 +1,50 @@
 pipeline {
-    agent any 
+    agent any
 
     environment {
-        IMAGE_NAME = 'gokulk306/react-task'
+        IMAGE_NAME = "gokulk306/react-docker-demo"  // Change this to your Docker Hub username
+        IMAGE_TAG = "v1"
     }
 
     stages {
-        stage('clone the repo') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Gokulk-306/Jenkins-guvi.git'
+                checkout scm
             }
+        }
+
+        stage('Build React App') {
+            steps {
+                sh 'npm install'
+                sh 'npm run build'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+                }
+            }
+        }
+
+        stage('Remove Image from EC2') {
+            steps {
+                sh 'docker rmi $IMAGE_NAME:$IMAGE_TAG || true'
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker logout || true'
         }
     }
 }
